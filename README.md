@@ -547,9 +547,12 @@ make test-coverage
 
 GitHub Actionsを使用した自動テスト：
 
-- **バックエンドテスト**: Go 1.21でテスト実行、カバレッジレポート生成
-- **フロントエンドテスト**: Node.js 20 + pnpmでテスト実行、カバレッジレポート生成
-- **Lint**: golangci-lintによる静的解析
+- **バージョン管理**: mise-actionを使用して `.mise.toml` からツールバージョンを自動読み込み
+- **バックエンドテスト**: Goテスト実行、カバレッジレポート生成（PostgreSQL付き）
+- **バックエンドLint**: golangci-lintによる静的解析
+- **フロントエンドテスト**: Vitestでテスト実行、カバレッジレポート生成
+- **フロントエンドLint**: ESLint + Prettierによるコード品質チェック
+- **フロントエンドビルド**: 本番ビルドの検証
 
 ワークフローファイル: `.github/workflows/ci.yml`
 
