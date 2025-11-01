@@ -1,0 +1,95 @@
+# Migration Files Directory
+
+このディレクトリには、sqldefによって生成されたマイグレーションSQLファイルを保存します。
+
+## 📁 ファイル命名規則
+
+タイムスタンプ + アンダースコア + 説明的な名前:
+```
+20250101120000_baseline.sql              # 初期スキーマ
+20250102153000_add_user_status.sql       # ステータスカラム追加
+20250103094500_create_posts_table.sql    # postsテーブル作成
+20250104101500_add_email_index.sql       # emailインデックス追加
+```
+
+## 🚀 マイグレーションファイルの生成方法
+
+### 方法1: Makefileコマンド（推奨）
+
+```bash
+# スキーマを変更
+vim db/schema/schema.sql
+
+# マイグレーションファイルを生成
+make db-generate-migration NAME=add_user_status
+
+# 生成されたファイルを確認
+cat db/migrations/20250101120000_add_user_status.sql
+```
+
+### 方法2: スクリプトを直接実行
+
+```bash
+./scripts/generate-migration.sh add_user_status
+```
+
+### 方法3: ベースラインをエクスポート
+
+```bash
+# 現在のDBスキーマ全体をエクスポート
+make db-export > db/migrations/001_baseline.sql
+
+# または
+./scripts/export-schema.sh db/migrations/001_baseline.sql
+```
+
+## 📝 ワークフロー例
+
+### 新しいカラムを追加する場合
+
+```bash
+# 1. スキーマファイルを編集
+vim db/schema/schema.sql
+# ALTER TABLE users ADD COLUMN status VARCHAR(50);
+
+# 2. マイグレーションファイルを生成
+make db-generate-migration NAME=add_user_status
+
+# 3. 生成された内容を確認
+# db/migrations/20250101120000_add_user_status.sql:
+# ALTER TABLE users ADD COLUMN status VARCHAR(50);
+
+# 4. マイグレーションを適用
+make db-migrate
+
+# 5. DAOコードを再生成（sqlc）
+make generate-dao
+```
+
+## ✅ マイグレーションファイルの利点
+
+- **履歴管理**: すべてのスキーマ変更がファイルとして記録される
+- **コードレビュー**: PRでスキーマ変更を確認できる
+- **ドキュメント**: なぜその変更を行ったかが名前でわかる
+- **ロールバック**: 手動でロールバックする際の参考になる
+- **チーム開発**: コンフリクトを早期に発見できる
+
+## ⚠️ 注意事項
+
+- マイグレーションファイルは**参照用**です
+- 実際のマイグレーションは `db/schema/schema.sql` から実行されます
+- ファイルは自動では適用されません（sqldefは宣言的アプローチ）
+- ロールバックは手動で行う必要があります
+
+## 🔄 sqldefのアプローチ
+
+sqldefは**宣言的スキーマ管理**を採用しています：
+
+- `db/schema/schema.sql` = 「あるべき姿」を定義
+- `make db-migrate` = 現在のDBとの差分を自動計算して適用
+- マイグレーションファイル = 変更履歴の記録（オプション）
+
+このアプローチにより：
+- ✅ スキーマファイルが単一の真実の情報源
+- ✅ どの状態からでも目標状態に到達できる
+- ✅ マイグレーション順序を気にしなくて良い

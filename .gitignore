@@ -24,6 +24,7 @@ pnpm-lock.yaml
 web/src/api/generated/
 web/src/routeTree.gen.ts
 pkg/generated/
+internal/infrastructure/dao/*.go
 
 # Test coverage
 coverage.out

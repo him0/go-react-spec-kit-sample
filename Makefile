@@ -1,4 +1,4 @@
-.PHONY: help install run-backend run-frontend generate-api build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
+.PHONY: help install install-tools run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run db-export db-generate-migration setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -6,6 +6,7 @@ help: ## ヘルプを表示
 setup: ## 開発環境のセットアップ
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/psqldef@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 	go install golang.org/x/tools/cmd/goimports@latest
 	pnpm install
@@ -13,6 +14,10 @@ setup: ## 開発環境のセットアップ
 install: ## 依存関係をインストール
 	go mod download
 	pnpm install
+
+install-tools: ## tools.goに定義されたツールをインストール
+	@echo "Installing tools from tools.go..."
+	@cat tools.go | grep _ | awk -F'"' '{print $$2}' | xargs -tI % go install %@latest
 
 docker-up: ## Dockerコンテナを起動
 	docker-compose up -d
@@ -29,6 +34,27 @@ db-migrate: ## psqldefを使用してデータベースマイグレーション�
 db-dry-run: ## データベースマイグレーションのドライラン
 	psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --file=db/schema/schema.sql --dry-run
 
+db-export: ## 現在のDBスキーマをエクスポート
+	@echo "Exporting current database schema..."
+	@psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --export
+
+db-generate-migration: ## スキーマ変更からマイグレーションファイルを生成
+	@echo "Generating migration file from schema changes..."
+	@if [ -z "$(NAME)" ]; then \
+		echo "Error: NAME is required. Usage: make db-generate-migration NAME=add_user_status"; \
+		exit 1; \
+	fi
+	@TIMESTAMP=$$(date +%Y%m%d%H%M%S); \
+	FILENAME="db/migrations/$${TIMESTAMP}_$(NAME).sql"; \
+	psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --file=db/schema/schema.sql --dry-run > $${FILENAME}; \
+	if [ -s $${FILENAME} ]; then \
+		echo "Migration file created: $${FILENAME}"; \
+		cat $${FILENAME}; \
+	else \
+		echo "No schema changes detected. Removing empty file."; \
+		rm $${FILENAME}; \
+	fi
+
 run-backend: ## バックエンドサーバーを起動
 	go run cmd/server/main.go
 
@@ -37,6 +63,10 @@ run-frontend: ## フロントエンド開発サーバーを起動
 
 generate-api: ## APIコードを生成（フロントエンド）
 	pnpm run generate:api
+
+generate-dao: ## DAOコードをsqlcで生成
+	@which sqlc > /dev/null || go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+	@sqlc generate
 
 build-backend: ## バックエンドをビルド
 	go build -o bin/server cmd/server/main.go
@@ -50,6 +80,7 @@ clean: ## ビルド成果物を削除
 	rm -rf bin/
 	rm -rf web/dist/
 	rm -rf web/src/api/generated/
+	rm -rf internal/infrastructure/dao/
 	rm -rf web/coverage/
 	rm -f coverage.out
 
