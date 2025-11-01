@@ -83,28 +83,9 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 
 このプロジェクトでは、開発環境のバージョンを統一するために [mise](https://mise.jdx.dev/) を使用することを推奨します。
 
-#### mise のインストール
+mise を使用する場合、プロジェクトディレクトリで以下を実行するだけで必要なツールがインストールされます：
 
 ```bash
-# macOS / Linux
-curl https://mise.run | sh
-
-# または Homebrew (macOS)
-brew install mise
-
-# mise をシェルに統合
-echo 'eval "$(mise activate bash)"' >> ~/.bashrc  # bash の場合
-echo 'eval "$(mise activate zsh)"' >> ~/.zshrc   # zsh の場合
-```
-
-詳細は [mise公式ドキュメント](https://mise.jdx.dev/getting-started.html) を参照してください。
-
-#### mise での環境セットアップ
-
-mise がインストール済みの場合、プロジェクトディレクトリで以下を実行するだけで必要なツールがインストールされます：
-
-```bash
-# プロジェクトルートで実行
 mise install
 ```
 
