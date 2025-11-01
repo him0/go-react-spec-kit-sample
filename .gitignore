@@ -28,6 +28,9 @@ pkg/generated/
 coverage.out
 web/coverage/
 
+# GitHub Actions (requires workflow permission to commit)
+.github/workflows/
+
 # IDE
 .vscode/
 .idea/
