@@ -3,11 +3,11 @@
 
 [tools]
 # Backend
-go = "1.24.7"
+go = "1.25.3"
 
 # Frontend
-node = "18.20.4"
-pnpm = "9.12.3"
+node = "24.11.0"
+pnpm = "10.20.0"
 
 [settings]
 # Automatically activate when entering this directory

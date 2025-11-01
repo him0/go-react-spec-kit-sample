@@ -72,8 +72,8 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 ## セットアップ
 
 ### 前提条件
-- Go 1.21+
-- Node.js 18+
+- Go 1.25+
+- Node.js 24+
 - pnpm
 - Docker & Docker Compose
 - psqldef (sqldef)
@@ -109,9 +109,9 @@ mise install
 ```
 
 これにより、`.mise.toml` で定義された以下のバージョンが自動的にインストールされます：
-- Go 1.24.7
-- Node.js 18.20.4
-- pnpm 9.12.3
+- Go 1.25.3
+- Node.js 24.11.0 (Krypton LTS)
+- pnpm 10.20.0
 
 ### インストール
 
