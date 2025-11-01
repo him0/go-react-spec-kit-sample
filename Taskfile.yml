@@ -61,6 +61,32 @@ tasks:
     cmds:
       - docker-compose logs -f
 
+  # Podman関連
+  podman:up:
+    desc: Podmanコンテナを起動
+    cmds:
+      - podman-compose up -d
+
+  podman:down:
+    desc: Podmanコンテナを停止
+    cmds:
+      - podman-compose down
+
+  podman:logs:
+    desc: Podmanログを表示
+    cmds:
+      - podman-compose logs -f
+
+  podman:ps:
+    desc: Podmanコンテナの状態を表示
+    cmds:
+      - podman-compose ps
+
+  podman:restart:
+    desc: Podmanコンテナを再起動
+    cmds:
+      - podman-compose restart
+
   # データベース関連
   db:migrate:
     desc: psqldefを使用してデータベースマイグレーションを実行
@@ -255,12 +281,20 @@ tasks:
     desc: 開発環境を一括起動（DB + バックエンド + フロントエンド）
     cmds:
       - echo "開発環境の起動手順："
+      - echo "  Docker使用の場合："
       - echo "  1. task docker:up      # PostgreSQLを起動"
       - echo "  2. task db:migrate     # データベースマイグレーション"
       - echo "  3. task dev:backend    # バックエンドを起動（別ターミナル）"
       - echo "  4. task dev:frontend   # フロントエンドを起動（別ターミナル）"
       - echo ""
+      - echo "  Podman使用の場合："
+      - echo "  1. task podman:up      # PostgreSQLを起動"
+      - echo "  2. task db:migrate     # データベースマイグレーション"
+      - echo "  3. task dev:backend    # バックエンドを起動（別ターミナル）"
+      - echo "  4. task dev:frontend   # フロントエンドを起動（別ターミナル）"
+      - echo ""
       - echo "または並列実行："
-      - echo "  task docker:up && task db:migrate"
+      - echo "  task docker:up && task db:migrate  # Docker"
+      - echo "  task podman:up && task db:migrate  # Podman"
       - echo "  # 別ターミナルで: task dev:backend"
       - echo "  # さらに別ターミナルで: task dev:frontend"

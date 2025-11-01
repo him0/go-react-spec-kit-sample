@@ -1,4 +1,4 @@
-.PHONY: help install install-tools run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run db-export db-generate-migration setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
+.PHONY: help install install-tools run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs podman-up podman-down podman-logs podman-ps podman-restart db-migrate db-dry-run db-export db-generate-migration setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -27,6 +27,21 @@ docker-down: ## Dockerコンテナを停止
 
 docker-logs: ## Dockerログを表示
 	docker-compose logs -f
+
+podman-up: ## Podmanコンテナを起動
+	podman-compose up -d
+
+podman-down: ## Podmanコンテナを停止
+	podman-compose down
+
+podman-logs: ## Podmanログを表示
+	podman-compose logs -f
+
+podman-ps: ## Podmanコンテナの状態を表示
+	podman-compose ps
+
+podman-restart: ## Podmanコンテナを再起動
+	podman-compose restart
 
 db-migrate: ## psqldefを使用してデータベースマイグレーションを実行
 	psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --file=db/schema/schema.sql
@@ -86,7 +101,15 @@ clean: ## ビルド成果物を削除
 
 dev: ## 開発環境を起動（バックエンド + フロントエンド）
 	@echo "開発環境の起動手順："
+	@echo ""
+	@echo "Docker使用の場合："
 	@echo "  1. make docker-up   # PostgreSQLを起動"
+	@echo "  2. make db-migrate  # データベースマイグレーション"
+	@echo "  3. make run-backend # バックエンドを起動（別ターミナル）"
+	@echo "  4. make run-frontend # フロントエンドを起動（別ターミナル）"
+	@echo ""
+	@echo "Podman使用の場合："
+	@echo "  1. make podman-up   # PostgreSQLを起動"
 	@echo "  2. make db-migrate  # データベースマイグレーション"
 	@echo "  3. make run-backend # バックエンドを起動（別ターミナル）"
 	@echo "  4. make run-frontend # フロントエンドを起動（別ターミナル）"

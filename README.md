@@ -83,7 +83,7 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - Go 1.25+
 - Node.js 24+
 - pnpm
-- Docker & Docker Compose
+- Docker & Docker Compose または Podman & podman-compose
 - mise (推奨) - バージョン管理ツール
 - Air (推奨) - Golangのホットリロードツール
 - Task (推奨) - Makefileの代替タスクランナー
@@ -102,6 +102,64 @@ mise install
 - Go 1.25.3
 - Node.js 24.11.0 (Krypton LTS)
 - pnpm 10.20.0
+
+### Podman のセットアップ（オプション）
+
+Dockerの代わりにPodmanを使用する場合、以下の手順でセットアップします。
+
+#### Podmanのインストール
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install -y podman
+```
+
+**Linux (Fedora/RHEL/CentOS):**
+```bash
+sudo dnf install -y podman
+```
+
+**macOS:**
+```bash
+brew install podman
+
+# Podman machineの初期化と起動
+podman machine init
+podman machine start
+```
+
+#### podman-composeのインストール
+
+```bash
+# pipを使用してインストール
+pip3 install podman-compose
+
+# または、システムパッケージでインストール (Ubuntu/Debian)
+sudo apt-get install -y podman-compose
+```
+
+#### Podmanの動作確認
+
+```bash
+# Podmanのバージョン確認
+podman --version
+
+# podman-composeのバージョン確認
+podman-compose --version
+
+# コンテナ実行テスト
+podman run --rm hello-world
+```
+
+#### PodmanとDockerの違い
+
+- **Rootless**: Podmanはroot権限なしで実行可能（より安全）
+- **Daemonless**: バックグラウンドデーモンが不要
+- **Docker互換**: DockerコマンドとほぼAPI互換
+- **compose互換**: podman-composeはdocker-compose.ymlをそのまま使用可能
+
+このプロジェクトの `docker-compose.yml` は podman-compose でもそのまま動作します。
 
 ### インストール
 
@@ -173,11 +231,18 @@ pnpm install
 
 ### データベースのセットアップ
 
-1. PostgreSQLをDockerで起動:
+1. PostgreSQLをDockerまたはPodmanで起動:
+
+**Docker使用の場合:**
 ```bash
 task docker:up
 # または
 make docker-up
+```
+
+**Podman使用の場合:**
+```bash
+task podman:up
 ```
 
 2. データベースマイグレーションを実行:
@@ -192,6 +257,22 @@ make db-migrate
 task db:dry-run
 # または
 make db-dry-run
+```
+
+### Podman使用時の追加コマンド
+
+```bash
+# コンテナの状態を確認
+task podman:ps
+
+# ログを表示
+task podman:logs
+
+# コンテナを再起動
+task podman:restart
+
+# コンテナを停止
+task podman:down
 ```
 
 ### マイグレーションファイルの生成（差分管理）
@@ -296,10 +377,17 @@ pnpm run generate:api
 #### オプション1: Air を使った開発（推奨 - ホットリロード対応）
 
 1. PostgreSQLを起動:
+
+**Docker使用の場合:**
 ```bash
 task docker:up
 # または
 make docker-up
+```
+
+**Podman使用の場合:**
+```bash
+task podman:up
 ```
 
 2. データベースマイグレーション:
@@ -331,12 +419,23 @@ pnpm run dev
 #### オプション2: 通常起動（ホットリロードなし）
 
 1. PostgreSQLを起動:
+
+**Docker使用の場合:**
 ```bash
+task docker:up
+# または
 make docker-up
+```
+
+**Podman使用の場合:**
+```bash
+task podman:up
 ```
 
 2. データベースマイグレーション:
 ```bash
+task db:migrate
+# または
 make db-migrate
 ```
 
