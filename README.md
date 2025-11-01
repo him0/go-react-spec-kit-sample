@@ -16,8 +16,9 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 ### フロントエンド (React)
 - **ビルドツール**: Vite
 - **UI**: React 18
+- **ルーティング**: TanStack Router (@tanstack/react-router)
 - **スタイリング**: Tailwind CSS + shadcn/ui
-- **状態管理**: React Query (@tanstack/react-query)
+- **状態管理**: TanStack Query (@tanstack/react-query)
 - **HTTPクライアント**: Axios
 - **パッケージマネージャー**: pnpm
 
@@ -251,6 +252,115 @@ function MyComponent() {
   )
 }
 ```
+
+## TanStack Router
+
+プロジェクトはファイルベースルーティングを使用するTanStack Routerで設定されています。
+
+### ルート構造
+
+ルートは `web/src/routes/` ディレクトリに配置されます：
+
+```
+web/src/routes/
+├── __root.tsx        # ルートレイアウト（ナビゲーション等）
+├── index.tsx         # / (ホームページ)
+├── users.tsx         # /users
+└── about.tsx         # /about
+```
+
+### 新しいルートの追加
+
+新しいページを追加するには、`web/src/routes/` に新しいファイルを作成します：
+
+```typescript
+// web/src/routes/new-page.tsx
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/new-page')({
+  component: NewPage,
+})
+
+function NewPage() {
+  return <div>New Page</div>
+}
+```
+
+### 型安全なナビゲーション
+
+TanStack Routerは完全な型安全性を提供します：
+
+```typescript
+import { Link } from '@tanstack/react-router'
+
+// 型安全なリンク
+<Link to="/users">Users</Link>
+<Link to="/about">About</Link>
+
+// パラメータ付きルートも型安全
+<Link to="/users/$userId" params={{ userId: '123' }}>User 123</Link>
+```
+
+### ルートツリーの自動生成
+
+Viteプラグインが `routeTree.gen.ts` を自動生成します。このファイルは手動で編集しないでください。
+
+## Orval & React Query
+
+OrvalはOpenAPI仕様からReact Query（TanStack Query）のhooksを自動生成します。
+
+### API コード生成
+
+```bash
+cd web
+pnpm run generate:api
+```
+
+これにより、`web/src/api/generated/` に以下が生成されます：
+- TypeScript型定義
+- React Query hooks（`useListUsers`, `useCreateUser`, など）
+- カスタムAxiosインスタンス
+
+### 使用例
+
+```typescript
+import { useListUsers, useCreateUser } from '@/api/generated/users'
+
+function UserList() {
+  // GETリクエスト用のhook
+  const { data, isLoading, error } = useListUsers({
+    limit: 10,
+    offset: 0,
+  })
+
+  // POSTリクエスト用のhook
+  const createUser = useCreateUser()
+
+  const handleCreate = async () => {
+    await createUser.mutateAsync({
+      data: { name: 'John', email: 'john@example.com' }
+    })
+  }
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+
+  return (
+    <div>
+      <button onClick={handleCreate}>Create User</button>
+      <ul>
+        {data?.users.map(user => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+### React Query Devtools
+
+開発時はReact Query Devtoolsが自動的に有効になり、クエリの状態を確認できます。
 
 ## ビルド
 
