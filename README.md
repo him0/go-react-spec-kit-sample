@@ -209,39 +209,53 @@ curl http://localhost:8080/api/v1/users?limit=10&offset=0
 
 このアプリケーションはDDD（ドメイン駆動設計）とCQRS（コマンドクエリ責務分離）パターンを採用しています。
 
-詳細なアーキテクチャガイドは [README_ARCHITECTURE.md](./README_ARCHITECTURE.md) を参照してください。
+### データフロー
 
-### 各層の概要
+```
+HTTPリクエスト → Handler → Usecase → Command/QueryService → Database
+```
+
+### CQRS パターン
+
+読み取りと書き込みの責務を分離：
+- **Command** (`command/`): データ変更操作（Create/Update/Delete）とトランザクション管理
+- **Query** (`queryservice/`): データ取得操作（Read）と最適化されたクエリ
+
+メリット: 関心の分離、独立したスケーリング、各操作に最適な実装が可能
+
+### 各層の責務
 
 #### Domain層 (`internal/domain`)
 - ビジネスロジックの中核
 - エンティティとビジネスルールの定義
-- 他の層に依存しない
 
 #### Command層 (`internal/command`)
 - **書き込み操作**（Create, Update, Delete）を担当
-- データベースへの永続化を実行
-- トランザクション管理
+- データベースへの永続化とトランザクション管理
 
 #### QueryService層 (`internal/queryservice`)
 - **読み取り操作**（Read）を担当
-- データベースからのクエリ実行
 - ページネーションやフィルタリング
 
 #### Usecase層 (`internal/usecase`)
 - ビジネスユースケースの実装
 - CommandとQueryServiceを組み合わせて使用
-- ビジネスルールの適用（重複チェックなど）
 
 #### Handler層 (`internal/handler`)
 - HTTPリクエスト・レスポンスの処理
-- リクエストのバリデーション
-- JSONのシリアライズ・デシリアライズ
+- リクエストのバリデーションとJSON処理
 
 #### Infrastructure層 (`internal/infrastructure`)
-- データベース接続
-- 外部サービスとの連携
-- 技術的な詳細の実装
+- データベース接続と外部サービス連携
+
+### 新機能の追加手順
+
+1. **Domain層**: エンティティとビジネスルールを定義
+2. **Command層**: 書き込み操作を実装
+3. **QueryService層**: 読み取り操作を実装
+4. **Usecase層**: CommandとQueryServiceを組み合わせてビジネスロジックを実装
+5. **Handler層**: HTTPエンドポイントを実装
+6. **main.go**: 依存関係を注入して各層を接続
 
 ## Orval の使い方
 
