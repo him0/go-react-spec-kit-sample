@@ -1,4 +1,4 @@
-.PHONY: help install run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
+.PHONY: help install run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run db-export db-generate-migration setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -29,6 +29,27 @@ db-migrate: ## psqldefを使用してデータベースマイグレーション�
 
 db-dry-run: ## データベースマイグレーションのドライラン
 	psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --file=db/schema/schema.sql --dry-run
+
+db-export: ## 現在のDBスキーマをエクスポート
+	@echo "Exporting current database schema..."
+	@psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --export
+
+db-generate-migration: ## スキーマ変更からマイグレーションファイルを生成
+	@echo "Generating migration file from schema changes..."
+	@if [ -z "$(NAME)" ]; then \
+		echo "Error: NAME is required. Usage: make db-generate-migration NAME=add_user_status"; \
+		exit 1; \
+	fi
+	@TIMESTAMP=$$(date +%Y%m%d%H%M%S); \
+	FILENAME="db/migrations/$${TIMESTAMP}_$(NAME).sql"; \
+	psqldef -U postgres -p 5432 -h localhost app_db --password=postgres --file=db/schema/schema.sql --dry-run > $${FILENAME}; \
+	if [ -s $${FILENAME} ]; then \
+		echo "Migration file created: $${FILENAME}"; \
+		cat $${FILENAME}; \
+	else \
+		echo "No schema changes detected. Removing empty file."; \
+		rm $${FILENAME}; \
+	fi
 
 run-backend: ## バックエンドサーバーを起動
 	go run cmd/server/main.go

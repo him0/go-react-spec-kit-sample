@@ -128,6 +128,44 @@ make db-migrate
 make db-dry-run
 ```
 
+### マイグレーションファイルの生成（差分管理）
+
+sqldefは宣言的アプローチですが、マイグレーション履歴を残すこともできます：
+
+#### 1. 現在のスキーマをエクスポート（ベースライン作成）
+```bash
+make db-export > db/migrations/001_baseline.sql
+# または
+./scripts/export-schema.sh db/migrations/001_baseline.sql
+```
+
+#### 2. スキーマ変更からマイグレーションファイルを生成
+```bash
+# 1. db/schema/schema.sql を編集してテーブルやカラムを追加
+
+# 2. 差分マイグレーションを生成
+make db-generate-migration NAME=add_user_status
+# または
+./scripts/generate-migration.sh add_user_status
+
+# 3. 生成されたマイグレーションファイルを確認
+# → db/migrations/20250101120000_add_user_status.sql
+
+# 4. マイグレーションを適用
+make db-migrate
+```
+
+**マイグレーションファイルの利点:**
+- ✅ スキーマ変更履歴を追跡できる
+- ✅ コードレビューでスキーマ変更を確認できる
+- ✅ ロールバックの際の参考になる
+- ✅ チーム開発でコンフリクトを減らせる
+
+**ファイル命名規則:**
+- `db/migrations/20250101120000_baseline.sql` - 初期スキーマ
+- `db/migrations/20250102153000_add_user_status.sql` - ステータスカラム追加
+- `db/migrations/20250103094500_create_posts_table.sql` - postsテーブル作成
+
 ### コード生成
 
 #### バックエンドのDAO生成 (sqlc)
