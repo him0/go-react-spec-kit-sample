@@ -27,7 +27,8 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - **パッケージマネージャー**: pnpm
 
 ### コード生成
-- **バックエンド**: openapi-generator (Go server code)
+- **バックエンド DAO**: sqlc (型安全なDAO struct生成)
+- **バックエンド API**: openapi-generator (Go server code)
 - **フロントエンド**: Orval (TypeScript types + React Query hooks)
 
 ## プロジェクト構造
@@ -41,8 +42,10 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 │   └── server/            # アプリケーションエントリーポイント
 │       └── main.go
 ├── db/
-│   └── schema/            # データベーススキーマ
-│       └── schema.sql
+│   ├── schema/            # データベーススキーマ
+│   │   └── schema.sql
+│   └── queries/           # sqlcクエリ定義
+│       └── users.sql
 ├── internal/
 │   ├── domain/            # ドメイン層
 │   │   └── user.go
@@ -55,7 +58,11 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 │   ├── handler/           # ハンドラー層
 │   │   └── user_handler.go
 │   └── infrastructure/    # インフラ層
-│       └── database.go
+│       ├── database.go
+│       └── dao/           # sqlc生成DAO (自動生成)
+│           ├── db.go
+│           ├── models.go
+│           └── users.sql.go
 ├── web/                   # フロントエンド
 │   ├── src/
 │   │   ├── api/          # Orvalで生成されたAPIコード
@@ -66,6 +73,7 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 │   ├── orval.config.ts   # Orval設定
 │   └── vite.config.ts    # Vite設定
 ├── scripts/              # ビルドスクリプト
+├── sqlc.yaml             # sqlc設定ファイル
 └── go.mod
 ```
 
@@ -77,6 +85,7 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - pnpm
 - Docker & Docker Compose
 - psqldef (sqldef)
+- sqlc
 
 ### インストール
 
@@ -93,6 +102,9 @@ go mod download
 
 # psqldefのインストール
 go install github.com/sqldef/sqldef/cmd/psqldef@latest
+
+# sqlcのインストール
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # フロントエンドの依存関係
 cd web
@@ -117,6 +129,28 @@ make db-dry-run
 ```
 
 ### コード生成
+
+#### バックエンドのDAO生成 (sqlc)
+```bash
+make generate-dao
+```
+
+これにより、`internal/infrastructure/dao`に以下が生成されます:
+- テーブル定義に対応するGo struct（models.go）
+- 型安全なクエリ関数（users.sql.go など）
+- データベース接続インターフェース（db.go）
+
+**sqlcの特徴:**
+- SQLスキーマとクエリから型安全なGoコードを自動生成
+- ORMではなく、生のSQLを使用できる
+- Command/QueryServiceパターンとの親和性が高い
+- ボイラープレートの削減
+
+**クエリの追加方法:**
+1. `db/queries/*.sql` にSQLクエリを追加
+2. `make generate-dao` で再生成
+
+詳細は[db/queries/users.sql](db/queries/users.sql)と[sqlc.yaml](sqlc.yaml)を参照してください。
 
 #### フロントエンドのAPIコード生成 (Orval)
 ```bash

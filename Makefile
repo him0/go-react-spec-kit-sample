@@ -1,4 +1,4 @@
-.PHONY: help install run-backend run-frontend generate-api build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
+.PHONY: help install run-backend run-frontend generate-api generate-dao build clean test test-backend test-frontend test-coverage docker-up docker-down docker-logs db-migrate db-dry-run setup lint fmt vet check-fmt check-imports modernize modernize-check ci-test
 
 help: ## ヘルプを表示
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -6,6 +6,7 @@ help: ## ヘルプを表示
 setup: ## 開発環境のセットアップ
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/psqldef@latest
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 	go install golang.org/x/tools/cmd/goimports@latest
 	cd web && pnpm install
@@ -38,6 +39,9 @@ run-frontend: ## フロントエンド開発サーバーを起動
 generate-api: ## APIコードを生成（フロントエンド）
 	cd web && pnpm run generate:api
 
+generate-dao: ## DAOコードをsqlcで生成
+	sqlc generate
+
 build-backend: ## バックエンドをビルド
 	go build -o bin/server cmd/server/main.go
 
@@ -50,6 +54,7 @@ clean: ## ビルド成果物を削除
 	rm -rf bin/
 	rm -rf web/dist/
 	rm -rf web/src/api/generated/
+	rm -rf internal/infrastructure/dao/
 	rm -rf web/coverage/
 	rm -f coverage.out
 
