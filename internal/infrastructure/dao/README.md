@@ -8,10 +8,10 @@
 make generate-dao
 ```
 
-または直接：
+または直接（`go run`で実行、インストール不要）：
 
 ```bash
-sqlc generate
+go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
 ```
 
 ## 生成されるファイル

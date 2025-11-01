@@ -6,7 +6,6 @@ help: ## ヘルプを表示
 setup: ## 開発環境のセットアップ
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/psqldef@latest
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	go install golang.org/x/tools/gopls/internal/analysis/modernize/cmd/modernize@latest
 	go install golang.org/x/tools/cmd/goimports@latest
 	cd web && pnpm install
@@ -61,7 +60,7 @@ generate-api: ## APIコードを生成（フロントエンド）
 	cd web && pnpm run generate:api
 
 generate-dao: ## DAOコードをsqlcで生成
-	sqlc generate
+	go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
 
 build-backend: ## バックエンドをビルド
 	go build -o bin/server cmd/server/main.go

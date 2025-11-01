@@ -85,7 +85,6 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - pnpm
 - Docker & Docker Compose
 - psqldef (sqldef)
-- sqlc
 
 ### インストール
 
@@ -102,9 +101,6 @@ go mod download
 
 # psqldefのインストール
 go install github.com/sqldef/sqldef/cmd/psqldef@latest
-
-# sqlcのインストール
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # フロントエンドの依存関係
 cd web
@@ -183,10 +179,16 @@ make generate-dao
 - ORMではなく、生のSQLを使用できる
 - Command/QueryServiceパターンとの親和性が高い
 - ボイラープレートの削減
+- `go run`で実行（インストール不要）
 
 **クエリの追加方法:**
 1. `db/queries/*.sql` にSQLクエリを追加
 2. `make generate-dao` で再生成
+
+**直接実行する場合:**
+```bash
+go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
+```
 
 詳細は[db/queries/users.sql](db/queries/users.sql)と[sqlc.yaml](sqlc.yaml)を参照してください。
 
