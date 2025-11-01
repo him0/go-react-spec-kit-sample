@@ -84,14 +84,18 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - Node.js 18+
 - pnpm
 - Docker & Docker Compose
-- psqldef (sqldef)
 
 ### インストール
 
-1. すべての依存関係をインストール（Go、フロントエンド、psqldef）:
+1. すべての依存関係をインストール:
 ```bash
 make setup
 ```
+
+これにより以下がインストールされます：
+- Go依存関係（`go mod download`）
+- 開発ツール（psqldef、sqlc、goimportsなど）
+- フロントエンド依存関係（pnpm）
 
 または個別にインストール:
 
@@ -99,13 +103,21 @@ make setup
 # Goの依存関係
 go mod download
 
-# psqldefのインストール
+# 開発ツール（tools.goに定義）
+make install-tools
+# または個別に
 go install github.com/sqldef/sqldef/cmd/psqldef@latest
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 
 # フロントエンドの依存関係
 cd web
 pnpm install
 ```
+
+**ツール管理について:**
+- 開発ツールは`tools.go`で依存関係として管理
+- `go install`でインストール後、コマンドとして直接実行可能
+- バージョンはgo.modで管理
 
 ### データベースのセットアップ
 
@@ -179,7 +191,7 @@ make generate-dao
 - ORMではなく、生のSQLを使用できる
 - Command/QueryServiceパターンとの親和性が高い
 - ボイラープレートの削減
-- `go run`で実行（インストール不要）
+- `tools.go`で依存関係として管理
 
 **クエリの追加方法:**
 1. `db/queries/*.sql` にSQLクエリを追加
@@ -187,7 +199,11 @@ make generate-dao
 
 **直接実行する場合:**
 ```bash
-go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
+# sqlcがインストールされていない場合は先にインストール
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+# 生成実行
+sqlc generate
 ```
 
 詳細は[db/queries/users.sql](db/queries/users.sql)と[sqlc.yaml](sqlc.yaml)を参照してください。

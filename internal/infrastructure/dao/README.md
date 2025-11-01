@@ -8,11 +8,17 @@
 make generate-dao
 ```
 
-または直接（`go run`で実行、インストール不要）：
+または直接（sqlcコマンドを使用）：
 
 ```bash
-go run github.com/sqlc-dev/sqlc/cmd/sqlc@latest generate
+# sqlcがインストールされていない場合は先にインストール
+go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
+# 生成実行
+sqlc generate
 ```
+
+**Note:** sqlcは`tools.go`で依存関係として管理されており、`make setup`でインストールされます。
 
 ## 生成されるファイル
 
