@@ -16,6 +16,7 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 ### フロントエンド (React)
 - **ビルドツール**: Vite
 - **UI**: React 18
+- **スタイリング**: Tailwind CSS + shadcn/ui
 - **状態管理**: React Query (@tanstack/react-query)
 - **HTTPクライアント**: Axios
 - **パッケージマネージャー**: pnpm
@@ -202,6 +203,52 @@ function UserList() {
   };
 
   // ...
+}
+```
+
+## Tailwind CSS & shadcn/ui
+
+プロジェクトにはTailwind CSSとshadcn/uiが設定済みです。
+
+### shadcn/uiコンポーネントの追加
+
+shadcn/uiのコンポーネントを追加するには、pnpmを使用します：
+
+```bash
+cd web
+pnpm dlx shadcn@latest add button
+pnpm dlx shadcn@latest add card
+pnpm dlx shadcn@latest add input
+# など
+```
+
+### 利用可能なコンポーネント
+
+shadcn/uiの全コンポーネントは [https://ui.shadcn.com/docs/components](https://ui.shadcn.com/docs/components) で確認できます。
+
+### 設定ファイル
+
+- `tailwind.config.js`: Tailwind CSS設定
+- `components.json`: shadcn/ui設定
+- `src/lib/utils.ts`: ユーティリティ関数（`cn`など）
+
+### 使用例
+
+```typescript
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+function MyComponent() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Hello World</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button variant="default">Click me</Button>
+      </CardContent>
+    </Card>
+  )
 }
 ```
 
