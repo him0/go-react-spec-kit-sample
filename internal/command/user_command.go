@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/domain"
 )
 
 // UserCommand ユーザー書き込み操作を担当

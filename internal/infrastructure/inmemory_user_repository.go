@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/domain"
 )
 
 // InMemoryUserRepository インメモリユーザーリポジトリ

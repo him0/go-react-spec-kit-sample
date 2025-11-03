@@ -3,7 +3,7 @@ package infrastructure
 import (
 	"testing"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/domain"
 )
 
 func TestInMemoryUserRepository_Save(t *testing.T) {
