@@ -7,6 +7,7 @@
     "build": "pnpm --filter web build",
     "preview": "pnpm --filter web preview",
     "generate:api": "pnpm --filter web generate:api",
+    "generate:openapi": "tsp compile typespec/main.tsp --output-dir openapi",
     "test": "pnpm --filter web test",
     "test:ui": "pnpm --filter web test:ui",
     "test:coverage": "pnpm --filter web test:coverage",
@@ -14,5 +15,10 @@
     "lint:fix": "pnpm --filter web lint:fix",
     "format": "pnpm --filter web format",
     "format:check": "pnpm --filter web format:check"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "^1.5.0",
+    "@typespec/http": "^1.5.0",
+    "@typespec/openapi3": "^1.5.0"
   }
 }

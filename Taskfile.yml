@@ -92,6 +92,11 @@ tasks:
     cmds:
       - sqlc generate
 
+  generate:openapi:
+    desc: TypeSpecからOpenAPI YAMLを生成
+    cmds:
+      - pnpm exec tsp compile typespec/main.tsp --output-dir openapi
+
   generate:api:
     desc: OpenAPI仕様からGoのサーバーコードを生成
     cmds:
@@ -104,10 +109,11 @@ tasks:
         fi
 
   generate:
-    desc: すべてのコード生成を実行（DAO + API）
+    desc: すべてのコード生成を実行（TypeSpec → OpenAPI → Go + DAO）
     cmds:
-      - task: generate:dao
+      - task: generate:openapi
       - task: generate:api
+      - task: generate:dao
 
   # ビルド関連
   build:
