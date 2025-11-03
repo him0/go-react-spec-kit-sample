@@ -3,7 +3,7 @@ package application
 import (
 	"testing"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/infrastructure"
+	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
 )
 
 func TestUserService_CreateUser(t *testing.T) {

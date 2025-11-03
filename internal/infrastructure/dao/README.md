@@ -54,7 +54,7 @@ package main
 
 import (
     "context"
-    "github.com/example/go-vite-spec-kit-sample/internal/infrastructure/dao"
+    "github.com/example/go-react-spec-kit-sample/internal/infrastructure/dao"
     "github.com/jackc/pgx/v5/pgxpool"
 )
 

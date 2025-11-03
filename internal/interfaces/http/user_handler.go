@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/application"
+	"github.com/example/go-react-spec-kit-sample/internal/application"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/command"
-	"github.com/example/go-vite-spec-kit-sample/internal/domain"
-	"github.com/example/go-vite-spec-kit-sample/internal/queryservice"
+	"github.com/example/go-react-spec-kit-sample/internal/command"
+	"github.com/example/go-react-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/queryservice"
 )
 
 // UserUsecase ユーザーのユースケースを管理

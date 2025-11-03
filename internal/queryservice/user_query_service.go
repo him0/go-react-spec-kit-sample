@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/example/go-vite-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/domain"
 )
 
 // UserQueryService ユーザー読み取り操作を担当
