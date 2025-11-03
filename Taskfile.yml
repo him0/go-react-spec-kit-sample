@@ -92,6 +92,11 @@ tasks:
     cmds:
       - sqlc generate
 
+  generate:openapi:
+    desc: TypeSpecからOpenAPI YAMLを生成
+    cmds:
+      - pnpm exec tsp compile typespec/main.tsp --output-dir openapi
+
   # ビルド関連
   build:
     desc: バックエンドをビルド

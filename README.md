@@ -27,6 +27,7 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 - **パッケージマネージャー**: pnpm
 
 ### コード生成
+- **OpenAPI仕様**: TypeSpec (型安全なAPI定義から OpenAPI YAML 生成)
 - **バックエンド DAO**: sqlc (型安全なDAO struct生成)
 - **バックエンド API**: openapi-generator (Go server code)
 - **フロントエンド**: Orval (TypeScript types + React Query hooks)
@@ -35,9 +36,12 @@ GolangのWebサーバー（DDD構成）+ Vite React + OpenAPI + Orvalを使用�
 
 ```
 .
-├── openapi/                # OpenAPI仕様
+├── typespec/               # TypeSpec API定義
+│   └── main.tsp
+├── openapi/                # OpenAPI仕様（TypeSpecから生成）
 │   ├── openapi.yaml
 │   └── generator-config.yaml
+├── tspconfig.yaml          # TypeSpec設定
 ├── cmd/
 │   └── server/            # アプリケーションエントリーポイント
 │       └── main.go
@@ -219,6 +223,33 @@ task db:migrate
 - `db/migrations/20250103094500_create_posts_table.sql` - postsテーブル作成
 
 ### コード生成
+
+#### OpenAPI仕様生成 (TypeSpec)
+
+TypeSpec を使用して OpenAPI 仕様書を生成できます。
+
+```bash
+# pnpm スクリプトを使用
+pnpm run generate:openapi
+
+# または task を使用
+task generate:openapi
+```
+
+これにより、`typespec/main.tsp` から `openapi/openapi.yaml` が生成されます。
+
+**TypeSpec の特徴:**
+- 型安全な API 定義
+- OpenAPI 3.0 形式での出力
+- 読みやすく保守しやすい構文
+- 複数の出力形式に対応（OpenAPI、JSON Schema など）
+
+**API 定義の編集:**
+1. `typespec/main.tsp` を編集
+2. `pnpm run generate:openapi` で OpenAPI YAML を再生成
+3. `pnpm run generate:api` でフロントエンド用のクライアントコードを生成
+
+詳細は [typespec/main.tsp](typespec/main.tsp) と [tspconfig.yaml](tspconfig.yaml) を参照してください。
 
 #### バックエンドのDAO生成 (sqlc)
 ```bash
