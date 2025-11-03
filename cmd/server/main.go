@@ -1,13 +1,14 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/example/go-react-spec-kit-sample/internal/command"
 	"github.com/example/go-react-spec-kit-sample/internal/handler"
 	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
+	"github.com/example/go-react-spec-kit-sample/internal/pkg/logger"
 	"github.com/example/go-react-spec-kit-sample/internal/queryservice"
 	"github.com/example/go-react-spec-kit-sample/internal/usecase"
 	"github.com/example/go-react-spec-kit-sample/pkg/generated/openapi"
@@ -17,6 +18,9 @@ import (
 )
 
 func main() {
+	// ロガーのセットアップ
+	log := logger.Setup()
+
 	// データベース接続設定
 	dbConfig := infrastructure.Config{
 		Host:     getEnv("DB_HOST", "localhost"),
@@ -27,14 +31,25 @@ func main() {
 		SSLMode:  getEnv("DB_SSLMODE", "disable"),
 	}
 
+	log.Info("connecting to database",
+		slog.String("host", dbConfig.Host),
+		slog.Int("port", dbConfig.Port),
+		slog.String("database", dbConfig.DBName),
+	)
+
 	// データベース接続
 	db, err := infrastructure.NewDB(dbConfig)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Error("failed to connect to database",
+			slog.String("error", err.Error()),
+			slog.String("host", dbConfig.Host),
+			slog.String("database", dbConfig.DBName),
+		)
+		os.Exit(1)
 	}
 	defer db.Close()
 
-	log.Println("Successfully connected to database")
+	log.Info("successfully connected to database")
 
 	// 各層の初期化
 	userCommand := command.NewUserCommand(db)
@@ -46,7 +61,7 @@ func main() {
 	r := chi.NewRouter()
 
 	// ミドルウェア
-	r.Use(middleware.Logger)
+	r.Use(logger.Middleware) // 構造化ログミドルウェア（リクエストID付与）
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
@@ -57,6 +72,10 @@ func main() {
 		MaxAge:           300,
 	}))
 
+	log.Info("middleware configured",
+		slog.String("cors_origin", "http://localhost:3000"),
+	)
+
 	// OpenAPI生成のハンドラーを使用してAPIルートを設定
 	r.Route("/api/v1", func(r chi.Router) {
 		// OpenAPI仕様に従ったルーティングを自動生成
@@ -65,9 +84,16 @@ func main() {
 
 	// サーバー起動
 	port := getEnv("PORT", "8080")
-	log.Printf("Server starting on :%s", port)
+	log.Info("server starting",
+		slog.String("port", port),
+		slog.String("address", ":"+port),
+	)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
-		log.Fatal(err)
+		log.Error("server failed to start",
+			slog.String("error", err.Error()),
+			slog.String("port", port),
+		)
+		os.Exit(1)
 	}
 }
 
