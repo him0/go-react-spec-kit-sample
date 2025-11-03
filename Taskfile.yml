@@ -24,7 +24,7 @@ tasks:
   podman:up:
     desc: Podmanコンテナを起動
     cmds:
-      - podman-compose up -d
+      - podman-compose up
 
   podman:down:
     desc: Podmanコンテナを停止
