@@ -1,51 +1,68 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: User Management API
-  description: Sample API for user management
-  version: 1.0.0
-servers:
-  - url: http://localhost:8080/api/v1
-    description: Development server
-
+  version: 0.0.0
+tags:
+  - name: users
 paths:
   /users:
     get:
-      summary: Get all users
-      operationId: listUsers
-      tags:
-        - users
+      operationId: Users_listUsers
+      description: Get all users
       parameters:
         - name: limit
           in: query
+          required: false
           description: Maximum number of users to return
           schema:
             type: integer
-            default: 10
+            format: int32
             minimum: 1
             maximum: 100
+            default: 10
+          explode: false
         - name: offset
           in: query
+          required: false
           description: Number of users to skip
           schema:
             type: integer
-            default: 0
+            format: int32
             minimum: 0
+            default: 0
+          explode: false
       responses:
         '200':
-          description: List of users
+          description: The request has succeeded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserList'
-        '500':
-          description: Internal server error
+        default:
+          description: An unexpected error response.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      tags:
+        - users
     post:
-      summary: Create a new user
-      operationId: createUser
+      operationId: Users_createUser
+      description: Create a new user
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - users
       requestBody:
@@ -54,32 +71,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        '201':
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
   /users/{userId}:
     get:
-      summary: Get user by ID
-      operationId: getUser
-      tags:
-        - users
+      operationId: Users_getUser
+      description: Get user by ID
       parameters:
         - name: userId
           in: path
@@ -90,28 +85,22 @@ paths:
             format: uuid
       responses:
         '200':
-          description: User details
+          description: The request has succeeded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
+        default:
+          description: An unexpected error response.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    put:
-      summary: Update user
-      operationId: updateUser
       tags:
         - users
+    put:
+      operationId: Users_updateUser
+      description: Update user
       parameters:
         - name: userId
           in: path
@@ -120,42 +109,30 @@ paths:
           schema:
             type: string
             format: uuid
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+        - users
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserRequest'
-      responses:
-        '200':
-          description: User updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     delete:
-      summary: Delete user
-      operationId: deleteUser
-      tags:
-        - users
+      operationId: Users_deleteUser
+      description: Delete user
       parameters:
         - name: userId
           in: path
@@ -166,22 +143,58 @@ paths:
             format: uuid
       responses:
         '204':
-          description: User deleted successfully
-        '404':
-          description: User not found
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        default:
+          description: An unexpected error response.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+      tags:
+        - users
 components:
   schemas:
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User name
+        email:
+          type: string
+          format: email
+          description: User email address
+      description: Create user request
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+      description: Error response
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: User name
+        email:
+          type: string
+          format: email
+          description: User email address
+      description: Update user request
     User:
       type: object
       required:
@@ -197,9 +210,9 @@ components:
           description: User ID
         name:
           type: string
-          description: User name
           minLength: 1
           maxLength: 100
+          description: User name
         email:
           type: string
           format: email
@@ -212,36 +225,7 @@ components:
           type: string
           format: date-time
           description: Last update timestamp
-
-    CreateUserRequest:
-      type: object
-      required:
-        - name
-        - email
-      properties:
-        name:
-          type: string
-          description: User name
-          minLength: 1
-          maxLength: 100
-        email:
-          type: string
-          format: email
-          description: User email address
-
-    UpdateUserRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          description: User name
-          minLength: 1
-          maxLength: 100
-        email:
-          type: string
-          format: email
-          description: User email address
-
+      description: User model
     UserList:
       type: object
       required:
@@ -252,18 +236,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+          description: List of users
         total:
           type: integer
+          format: int32
           description: Total number of users
-
-    Error:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          description: Error message
-        code:
-          type: string
-          description: Error code
+      description: User list response
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+    variables: {}
