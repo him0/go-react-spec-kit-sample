@@ -24,7 +24,6 @@ web/.env.test.local
 web/.env.production.local
 
 # Generated code
-web/src/routeTree.gen.ts
 pkg/generated/
 internal/infrastructure/dao/*.go
 
