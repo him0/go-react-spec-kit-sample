@@ -53,6 +53,9 @@ importers:
       tailwind-merge:
         specifier: ^2.5.4
         version: 2.6.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0
