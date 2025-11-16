@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { z } from 'zod'
 import {
   useUsersListUsers,
   useUsersCreateUser,
@@ -16,15 +16,25 @@ import { UserCreateForm } from '../components/UserCreateForm'
 import { UserDetail } from '../components/UserDetail'
 import { UserEditForm } from '../components/UserEditForm'
 
+const usersSearchSchema = z.object({
+  userId: z.string().optional(),
+  showCreate: z.boolean().optional(),
+  isEdit: z.boolean().optional(),
+})
+
 export const Route = createFileRoute('/users')({
   component: Users,
+  validateSearch: usersSearchSchema,
 })
 
 function Users() {
+  const navigate = Route.useNavigate()
+  const search = Route.useSearch()
   const queryClient = useQueryClient()
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [isEditMode, setIsEditMode] = useState(false)
+
+  const selectedUserId = search.userId ?? null
+  const showCreateForm = search.showCreate ?? false
+  const isEditMode = search.isEdit ?? false
 
   // Queries
   const { data: usersList, isLoading: isLoadingList, error: listError } = useUsersListUsers()
@@ -37,56 +47,79 @@ function Users() {
   })
 
   // Mutations
-  const createUserMutation = useUsersCreateUser({
+  const {
+    mutate: createUser,
+    isPending: isCreating,
+    isError: isCreateError,
+    isSuccess: isCreateSuccess,
+    error: createError,
+  } = useUsersCreateUser({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getUsersListUsersQueryKey() })
-        setShowCreateForm(false)
+        navigate({ search: { ...search, showCreate: undefined } })
       },
     },
   })
 
-  const updateUserMutation = useUsersUpdateUser({
+  const {
+    mutate: updateUser,
+    isPending: isUpdating,
+    isError: isUpdateError,
+    isSuccess: isUpdateSuccess,
+    error: updateError,
+  } = useUsersUpdateUser({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getUsersListUsersQueryKey() })
         if (selectedUserId) {
           queryClient.invalidateQueries({ queryKey: getUsersGetUserQueryKey(selectedUserId) })
         }
-        setIsEditMode(false)
+        navigate({ search: { ...search, isEdit: undefined } })
       },
     },
   })
 
-  const deleteUserMutation = useUsersDeleteUser({
+  const {
+    mutate: deleteUser,
+    isPending: isDeleting,
+  } = useUsersDeleteUser({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getUsersListUsersQueryKey() })
-        setSelectedUserId(null)
+        navigate({ search: { ...search, userId: undefined, isEdit: undefined } })
       },
     },
   })
 
   const handleCreateUser = (data: CreateUserRequest) => {
-    createUserMutation.mutate({ data })
+    createUser({ data })
   }
 
   const handleUpdateUser = (userId: string, data: UpdateUserRequest) => {
-    updateUserMutation.mutate({ userId, data })
+    updateUser({ userId, data })
   }
 
   const handleDeleteUser = (userId: string) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      deleteUserMutation.mutate({ userId })
+      deleteUser({ userId })
     }
   }
 
+  const handleSelectUser = (userId: string | null) => {
+    navigate({ search: { ...search, userId: userId ?? undefined, isEdit: undefined } })
+  }
+
+  const handleToggleCreateForm = () => {
+    navigate({ search: { ...search, showCreate: !showCreateForm } })
+  }
+
   const handleEditClick = () => {
-    setIsEditMode(true)
+    navigate({ search: { ...search, isEdit: true } })
   }
 
   const handleCancelEdit = () => {
-    setIsEditMode(false)
+    navigate({ search: { ...search, isEdit: undefined } })
   }
 
   return (
@@ -97,7 +130,7 @@ function Users() {
           <p className="text-muted-foreground mt-2">Manage your users here.</p>
         </div>
         <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
+          onClick={handleToggleCreateForm}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
         >
           {showCreateForm ? 'Cancel' : 'Create User'}
@@ -107,10 +140,10 @@ function Users() {
       {showCreateForm && (
         <UserCreateForm
           onSubmit={handleCreateUser}
-          isPending={createUserMutation.isPending}
-          isError={createUserMutation.isError}
-          isSuccess={createUserMutation.isSuccess}
-          errorMessage={createUserMutation.error?.message}
+          isPending={isCreating}
+          isError={isCreateError}
+          isSuccess={isCreateSuccess}
+          errorMessage={createError?.message}
         />
       )}
 
@@ -121,9 +154,9 @@ function Users() {
           isLoading={isLoadingList}
           error={listError}
           selectedUserId={selectedUserId}
-          onSelectUser={setSelectedUserId}
+          onSelectUser={handleSelectUser}
           onDeleteUser={handleDeleteUser}
-          isDeleting={deleteUserMutation.isPending}
+          isDeleting={isDeleting}
         />
 
         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
@@ -156,7 +189,7 @@ function Users() {
               user={selectedUser}
               onEdit={handleEditClick}
               onDelete={handleDeleteUser}
-              isDeleting={deleteUserMutation.isPending}
+              isDeleting={isDeleting}
             />
           )}
           {selectedUser && isEditMode && (
@@ -165,10 +198,10 @@ function Users() {
               user={selectedUser}
               onSubmit={handleUpdateUser}
               onCancel={handleCancelEdit}
-              isPending={updateUserMutation.isPending}
-              isError={updateUserMutation.isError}
-              isSuccess={updateUserMutation.isSuccess}
-              errorMessage={updateUserMutation.error?.message}
+              isPending={isUpdating}
+              isError={isUpdateError}
+              isSuccess={isUpdateSuccess}
+              errorMessage={updateError?.message}
             />
           )}
         </div>
