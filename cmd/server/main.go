@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/example/go-react-spec-kit-sample/internal/command"
 	"github.com/example/go-react-spec-kit-sample/internal/handler"
 	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
 	"github.com/example/go-react-spec-kit-sample/internal/pkg/logger"
@@ -51,15 +52,15 @@ func main() {
 	log.Info("successfully connected to database")
 
 	// 各層の初期化
-	txManager := infrastructure.NewTransactionManager(db)
+	userCommand := command.NewUserCommand(db)
 	userQueryService := queryservice.NewUserQueryService(db)
 
 	// Usecases
-	createUserUsecase := usecase.NewCreateUserUsecase(txManager)
+	createUserUsecase := usecase.NewCreateUserUsecase(userQueryService, userCommand)
 	findUserUsecase := usecase.NewFindUserUsecase(userQueryService)
 	listUsersUsecase := usecase.NewListUsersUsecase(userQueryService)
-	updateUserUsecase := usecase.NewUpdateUserUsecase(txManager)
-	deleteUserUsecase := usecase.NewDeleteUserUsecase(txManager)
+	updateUserUsecase := usecase.NewUpdateUserUsecase(userQueryService, userCommand)
+	deleteUserUsecase := usecase.NewDeleteUserUsecase(userQueryService, userCommand)
 
 	userHandler := handler.NewUserHandler(
 		createUserUsecase,

@@ -6,22 +6,16 @@ import (
 	"fmt"
 
 	"github.com/example/go-react-spec-kit-sample/internal/domain"
-	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
 )
 
 // UserQueryService ユーザー読み取り操作を担当
 type UserQueryService struct {
-	db infrastructure.DBTX
+	db *sql.DB
 }
 
 // NewUserQueryService UserQueryServiceのコンストラクタ
-func NewUserQueryService(db infrastructure.DBTX) *UserQueryService {
+func NewUserQueryService(db *sql.DB) *UserQueryService {
 	return &UserQueryService{db: db}
-}
-
-// WithTx トランザクション用の新しいUserQueryServiceを返す
-func (q *UserQueryService) WithTx(tx infrastructure.DBTX) *UserQueryService {
-	return &UserQueryService{db: tx}
 }
 
 // FindByID IDでユーザーを検索
@@ -110,58 +104,6 @@ func (q *UserQueryService) FindByEmail(ctx context.Context, email string) (*doma
 
 	var user domain.User
 	err := q.db.QueryRowContext(ctx, query, email).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user by email: %w", err)
-	}
-
-	return &user, nil
-}
-
-// FindByIDWithTx トランザクション内でIDによるユーザー検索
-func FindByIDWithTx(ctx context.Context, tx infrastructure.DBTX, id string) (*domain.User, error) {
-	query := `
-		SELECT id, name, email, created_at, updated_at
-		FROM users
-		WHERE id = $1
-	`
-
-	var user domain.User
-	err := tx.QueryRowContext(ctx, query, id).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
-	return &user, nil
-}
-
-// FindByEmailWithTx トランザクション内でメールアドレスによるユーザー検索
-func FindByEmailWithTx(ctx context.Context, tx infrastructure.DBTX, email string) (*domain.User, error) {
-	query := `
-		SELECT id, name, email, created_at, updated_at
-		FROM users
-		WHERE email = $1
-	`
-
-	var user domain.User
-	err := tx.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Email,
