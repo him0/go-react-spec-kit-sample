@@ -54,8 +54,21 @@ func main() {
 	// 各層の初期化
 	userCommand := command.NewUserCommand(db)
 	userQueryService := queryservice.NewUserQueryService(db)
-	userUsecase := usecase.NewUserUsecase(userCommand, userQueryService)
-	userHandler := handler.NewUserHandler(userUsecase)
+
+	// Usecases
+	createUserUsecase := usecase.NewCreateUserUsecase(userCommand, userQueryService)
+	findUserUsecase := usecase.NewFindUserUsecase(userQueryService)
+	listUsersUsecase := usecase.NewListUsersUsecase(userQueryService)
+	updateUserUsecase := usecase.NewUpdateUserUsecase(userCommand, userQueryService)
+	deleteUserUsecase := usecase.NewDeleteUserUsecase(userCommand, userQueryService)
+
+	userHandler := handler.NewUserHandler(
+		createUserUsecase,
+		findUserUsecase,
+		listUsersUsecase,
+		updateUserUsecase,
+		deleteUserUsecase,
+	)
 
 	// ルーターの設定
 	r := chi.NewRouter()

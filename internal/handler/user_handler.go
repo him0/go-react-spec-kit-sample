@@ -12,13 +12,27 @@ import (
 
 // UserHandler HTTPハンドラー（OpenAPI生成のServerInterfaceを実装）
 type UserHandler struct {
-	userUsecase *usecase.UserUsecase
+	createUser *usecase.CreateUserUsecase
+	findUser   *usecase.FindUserUsecase
+	listUsers  *usecase.ListUsersUsecase
+	updateUser *usecase.UpdateUserUsecase
+	deleteUser *usecase.DeleteUserUsecase
 }
 
 // NewUserHandler UserHandlerのコンストラクタ
-func NewUserHandler(userUsecase *usecase.UserUsecase) *UserHandler {
+func NewUserHandler(
+	createUser *usecase.CreateUserUsecase,
+	findUser *usecase.FindUserUsecase,
+	listUsers *usecase.ListUsersUsecase,
+	updateUser *usecase.UpdateUserUsecase,
+	deleteUser *usecase.DeleteUserUsecase,
+) *UserHandler {
 	return &UserHandler{
-		userUsecase: userUsecase,
+		createUser: createUser,
+		findUser:   findUser,
+		listUsers:  listUsers,
+		updateUser: updateUser,
+		deleteUser: deleteUser,
 	}
 }
 
@@ -30,7 +44,7 @@ func (h *UserHandler) UsersCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.userUsecase.CreateUser(r.Context(), req.Name, string(req.Email))
+	user, err := h.createUser.Execute(r.Context(), req.Name, string(req.Email))
 	if err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
@@ -56,7 +70,7 @@ func (h *UserHandler) UsersCreateUser(w http.ResponseWriter, r *http.Request) {
 
 // UsersGetUser ユーザーを取得（OpenAPI ServerInterface実装）
 func (h *UserHandler) UsersGetUser(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID) {
-	user, err := h.userUsecase.GetUser(r.Context(), userId.String())
+	user, err := h.findUser.Execute(r.Context(), userId.String())
 	if err != nil {
 		respondError(w, http.StatusNotFound, err.Error())
 		return
@@ -96,7 +110,7 @@ func (h *UserHandler) UsersListUsers(w http.ResponseWriter, r *http.Request, par
 		offset = int(*params.Offset)
 	}
 
-	users, total, err := h.userUsecase.ListUsers(r.Context(), limit, offset)
+	users, total, err := h.listUsers.Execute(r.Context(), limit, offset)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -147,7 +161,7 @@ func (h *UserHandler) UsersUpdateUser(w http.ResponseWriter, r *http.Request, us
 		email = string(*req.Email)
 	}
 
-	user, err := h.userUsecase.UpdateUser(r.Context(), userId.String(), name, email)
+	user, err := h.updateUser.Execute(r.Context(), userId.String(), name, email)
 	if err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
@@ -173,7 +187,7 @@ func (h *UserHandler) UsersUpdateUser(w http.ResponseWriter, r *http.Request, us
 
 // UsersDeleteUser ユーザーを削除（OpenAPI ServerInterface実装）
 func (h *UserHandler) UsersDeleteUser(w http.ResponseWriter, r *http.Request, userId openapi_types.UUID) {
-	if err := h.userUsecase.DeleteUser(r.Context(), userId.String()); err != nil {
+	if err := h.deleteUser.Execute(r.Context(), userId.String()); err != nil {
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
