@@ -3,36 +3,37 @@ package usecase
 import (
 	"context"
 	"errors"
+
+	"github.com/example/go-react-spec-kit-sample/internal/command"
+	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
+	"github.com/example/go-react-spec-kit-sample/internal/queryservice"
 )
 
 // DeleteUserUsecase ユーザー削除ユースケース
 type DeleteUserUsecase struct {
-	userCommand UserCommandRepository
-	userQuery   UserQueryRepository
+	txManager TransactionManager
 }
 
 // NewDeleteUserUsecase DeleteUserUsecaseのコンストラクタ
-func NewDeleteUserUsecase(
-	userCommand UserCommandRepository,
-	userQuery UserQueryRepository,
-) *DeleteUserUsecase {
+func NewDeleteUserUsecase(txManager TransactionManager) *DeleteUserUsecase {
 	return &DeleteUserUsecase{
-		userCommand: userCommand,
-		userQuery:   userQuery,
+		txManager: txManager,
 	}
 }
 
 // Execute ユーザーを削除
 func (u *DeleteUserUsecase) Execute(ctx context.Context, id string) error {
-	// 存在確認
-	user, err := u.userQuery.FindByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	if user == nil {
-		return errors.New("user not found")
-	}
+	return u.txManager.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
+		// 存在確認
+		user, err := queryservice.FindByIDWithTx(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+		if user == nil {
+			return errors.New("user not found")
+		}
 
-	// 削除
-	return u.userCommand.Delete(ctx, id)
+		// 削除
+		return command.DeleteWithTx(ctx, tx, id)
+	})
 }

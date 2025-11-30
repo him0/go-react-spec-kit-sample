@@ -4,13 +4,12 @@ import (
 	"context"
 
 	"github.com/example/go-react-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
 )
 
-// UserCommandRepository 書き込み操作のインターフェース
-type UserCommandRepository interface {
-	Create(ctx context.Context, user *domain.User) error
-	Update(ctx context.Context, user *domain.User) error
-	Delete(ctx context.Context, id string) error
+// TransactionManager トランザクション管理のインターフェース
+type TransactionManager interface {
+	RunInTransaction(ctx context.Context, fn func(ctx context.Context, tx infrastructure.DBTX) error) error
 }
 
 // UserQueryRepository 読み取り操作のインターフェース

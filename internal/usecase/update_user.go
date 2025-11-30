@@ -4,57 +4,66 @@ import (
 	"context"
 	"errors"
 
+	"github.com/example/go-react-spec-kit-sample/internal/command"
 	"github.com/example/go-react-spec-kit-sample/internal/domain"
+	"github.com/example/go-react-spec-kit-sample/internal/infrastructure"
+	"github.com/example/go-react-spec-kit-sample/internal/queryservice"
 )
 
 // UpdateUserUsecase ユーザー更新ユースケース
 type UpdateUserUsecase struct {
-	userCommand UserCommandRepository
-	userQuery   UserQueryRepository
+	txManager TransactionManager
 }
 
 // NewUpdateUserUsecase UpdateUserUsecaseのコンストラクタ
-func NewUpdateUserUsecase(
-	userCommand UserCommandRepository,
-	userQuery UserQueryRepository,
-) *UpdateUserUsecase {
+func NewUpdateUserUsecase(txManager TransactionManager) *UpdateUserUsecase {
 	return &UpdateUserUsecase{
-		userCommand: userCommand,
-		userQuery:   userQuery,
+		txManager: txManager,
 	}
 }
 
 // Execute ユーザーを更新
 func (u *UpdateUserUsecase) Execute(ctx context.Context, id, name, email string) (*domain.User, error) {
-	// 既存ユーザーの取得
-	user, err := u.userQuery.FindByID(ctx, id)
+	var updatedUser *domain.User
+
+	err := u.txManager.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
+		// 既存ユーザーの取得
+		user, err := queryservice.FindByIDWithTx(ctx, tx, id)
+		if err != nil {
+			return err
+		}
+		if user == nil {
+			return errors.New("user not found")
+		}
+
+		// メールアドレスが変更される場合、重複チェック
+		if email != "" && email != user.Email {
+			existingUser, err := queryservice.FindByEmailWithTx(ctx, tx, email)
+			if err != nil {
+				return err
+			}
+			if existingUser != nil {
+				return errors.New("email already exists")
+			}
+		}
+
+		// ドメインモデルの更新
+		if err := user.Update(name, email); err != nil {
+			return err
+		}
+
+		// 永続化
+		if err := command.UpdateWithTx(ctx, tx, user); err != nil {
+			return err
+		}
+
+		updatedUser = user
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	if user == nil {
-		return nil, errors.New("user not found")
-	}
 
-	// メールアドレスが変更される場合、重複チェック
-	if email != "" && email != user.Email {
-		existingUser, err := u.userQuery.FindByEmail(ctx, email)
-		if err != nil {
-			return nil, err
-		}
-		if existingUser != nil {
-			return nil, errors.New("email already exists")
-		}
-	}
-
-	// ドメインモデルの更新
-	if err := user.Update(name, email); err != nil {
-		return nil, err
-	}
-
-	// 永続化
-	if err := u.userCommand.Update(ctx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+	return updatedUser, nil
 }
