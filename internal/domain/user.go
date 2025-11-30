@@ -46,12 +46,3 @@ func (u *User) Update(name, email string) error {
 	u.UpdatedAt = time.Now()
 	return nil
 }
-
-// UserRepository ユーザーリポジトリのインターフェース
-type UserRepository interface {
-	FindByID(id string) (*User, error)
-	FindAll(limit, offset int) ([]*User, error)
-	Count() (int, error)
-	Save(user *User) error
-	Delete(id string) error
-}
