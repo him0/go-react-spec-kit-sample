@@ -11,18 +11,18 @@ import (
 
 // UpdateUserUsecase ユーザー更新ユースケース
 type UpdateUserUsecase struct {
-	userQuery   UserQueryRepository
-	userCommand TransactionManager
+	userQuery UserQueryRepository
+	txManager TransactionManager
 }
 
 // NewUpdateUserUsecase UpdateUserUsecaseのコンストラクタ
 func NewUpdateUserUsecase(
 	userQuery UserQueryRepository,
-	userCommand TransactionManager,
+	txManager TransactionManager,
 ) *UpdateUserUsecase {
 	return &UpdateUserUsecase{
-		userQuery:   userQuery,
-		userCommand: userCommand,
+		userQuery: userQuery,
+		txManager: txManager,
 	}
 }
 
@@ -54,7 +54,7 @@ func (u *UpdateUserUsecase) Execute(ctx context.Context, id, name, email string)
 	}
 
 	// 永続化（ライターDB、トランザクション内）
-	err = u.userCommand.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
+	err = u.txManager.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
 		return command.Update(ctx, tx, user)
 	})
 	if err != nil {

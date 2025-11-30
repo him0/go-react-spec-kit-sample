@@ -11,18 +11,18 @@ import (
 
 // CreateUserUsecase ユーザー作成ユースケース
 type CreateUserUsecase struct {
-	userQuery   UserQueryRepository
-	userCommand TransactionManager
+	userQuery UserQueryRepository
+	txManager TransactionManager
 }
 
 // NewCreateUserUsecase CreateUserUsecaseのコンストラクタ
 func NewCreateUserUsecase(
 	userQuery UserQueryRepository,
-	userCommand TransactionManager,
+	txManager TransactionManager,
 ) *CreateUserUsecase {
 	return &CreateUserUsecase{
-		userQuery:   userQuery,
-		userCommand: userCommand,
+		userQuery: userQuery,
+		txManager: txManager,
 	}
 }
 
@@ -44,7 +44,7 @@ func (u *CreateUserUsecase) Execute(ctx context.Context, name, email string) (*d
 	}
 
 	// 永続化（ライターDB、トランザクション内）
-	err = u.userCommand.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
+	err = u.txManager.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
 		return command.Create(ctx, tx, user)
 	})
 	if err != nil {

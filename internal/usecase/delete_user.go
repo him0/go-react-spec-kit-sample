@@ -10,18 +10,18 @@ import (
 
 // DeleteUserUsecase ユーザー削除ユースケース
 type DeleteUserUsecase struct {
-	userQuery   UserQueryRepository
-	userCommand TransactionManager
+	userQuery UserQueryRepository
+	txManager TransactionManager
 }
 
 // NewDeleteUserUsecase DeleteUserUsecaseのコンストラクタ
 func NewDeleteUserUsecase(
 	userQuery UserQueryRepository,
-	userCommand TransactionManager,
+	txManager TransactionManager,
 ) *DeleteUserUsecase {
 	return &DeleteUserUsecase{
-		userQuery:   userQuery,
-		userCommand: userCommand,
+		userQuery: userQuery,
+		txManager: txManager,
 	}
 }
 
@@ -37,7 +37,7 @@ func (u *DeleteUserUsecase) Execute(ctx context.Context, id string) error {
 	}
 
 	// 削除（ライターDB、トランザクション内）
-	return u.userCommand.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
+	return u.txManager.RunInTransaction(ctx, func(ctx context.Context, tx infrastructure.DBTX) error {
 		return command.Delete(ctx, tx, id)
 	})
 }
