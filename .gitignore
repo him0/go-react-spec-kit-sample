@@ -23,19 +23,11 @@ web/.env.development.local
 web/.env.test.local
 web/.env.production.local
 
-# Generated code
-pkg/generated/
-internal/infrastructure/dao/*.go
-
 # Test coverage
 coverage.out
 web/coverage/
 
-# GitHub workflows (cannot be pushed by GitHub App without workflows permission)
-.github/
-
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
