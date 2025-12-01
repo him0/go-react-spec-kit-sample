@@ -101,8 +101,6 @@ tasks:
     desc: OpenAPI仕様からGoのサーバーコードを生成
     cmds:
       - mkdir -p pkg/generated/openapi
-      - mkdir -p pkg/openapi
-      - cp openapi/openapi.yaml pkg/openapi/openapi.yaml
       - |
         if command -v oapi-codegen >/dev/null 2>&1; then
           oapi-codegen -generate types,chi-server -package openapi -o pkg/generated/openapi/server.gen.go openapi/openapi.yaml

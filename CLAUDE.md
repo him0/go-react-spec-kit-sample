@@ -38,13 +38,12 @@ internal/
     logger/       # slogベースのロガー
     errors/       # AppError
 pkg/
-  openapi/        # 埋め込みOpenAPI spec
   generated/      # oapi-codegen生成コード
 db/
   schema/         # テーブル定義 (psqldef)
   queries/        # sqlc用SQL
 typespec/         # API定義 (TypeSpec)
-openapi/          # 生成されたOpenAPI仕様
+openapi/          # 生成されたOpenAPI仕様 + embed.go (バリデーション用)
 ```
 
 ### Frontend
